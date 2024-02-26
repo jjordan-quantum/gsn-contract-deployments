@@ -3,9 +3,9 @@
 -[x] deploy forwarder
 -[ ] execute Forwarder.registerRequestType
 -[ ] execute Forwarder.registerDomainSeparator
--[ ] deploy Penalizer
--[ ] deploy StakeManager
--[ ] deploy RelayRegistrar
+-[x] deploy Penalizer
+-[x] deploy StakeManager
+-[x] deploy RelayRegistrar
 -[ ] deploy RelayHub
 -[ ] apply deployment configs
 -[ ] apply hub config
