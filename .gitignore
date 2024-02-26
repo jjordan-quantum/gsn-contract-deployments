@@ -1,0 +1,41 @@
+node_modules
+.env
+.idea
+dist
+local
+logs
+errors
+debugging
+/metrics
+pairs.*.json
+approvals.*.json
+tokens.*.json
+bot.*.config.json
+blooms
+blooms/
+blooms/*
+archived
+archived/
+archived/*
+chats.json
+/data
+nohup*
+config.json
+botData
+/cache
+/backup
+
+node_modules
+.env
+
+# Hardhat files
+/cache
+/artifacts
+
+# TypeChain files
+/typechain
+/typechain-types
+
+# solidity-coverage files
+/coverage
+/coverage.json
