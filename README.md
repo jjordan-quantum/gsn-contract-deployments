@@ -1,13 +1,3 @@
-# Sample Hardhat Project
+# GSN Contract Deployments
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
-
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+This project contains an extremely simple streamlined deployment of the Gas Station Network (v3.0.0-beta.10) smart contracts using hardhat.
