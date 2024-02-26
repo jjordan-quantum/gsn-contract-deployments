@@ -79,6 +79,6 @@ contract TestUtil {
     }
 
     function _ecrecover(string memory message, bytes memory signature) public pure returns (address) {
-        return bytes(message).toEthSignedMessageHash().recover(signature);
+        return ECDSA.toEthSignedMessageHash(bytes32(bytes(message))).recover(signature);
     }
 }

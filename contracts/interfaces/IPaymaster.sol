@@ -2,7 +2,7 @@
 pragma solidity >=0.7.6;
 pragma abicoder v2;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 import "../utils/GsnTypes.sol";
 
