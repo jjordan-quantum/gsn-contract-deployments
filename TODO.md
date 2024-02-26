@@ -1,0 +1,18 @@
+### TODO list for GSN deployment:
+-[ ] deploy staking token
+-[ ] deploy forwarder
+-[ ] execute Forwarder.registerRequestType
+-[ ] execute Forwarder.registerDomainSeparator
+-[ ] deploy Penalizer
+-[ ] deploy StakeManager
+-[ ] deploy RelayRegistrar
+-[ ] deploy RelayHub
+-[ ] apply deployment configs
+-[ ] apply hub config
+-[ ] apply staking token config
+-[ ] set StakeManager devAddress
+-[ ] set RelayRegistrar fields
+-[ ] deploy Paymaster
+-[ ] set Paymaster fields
+-[ ] deposit funds to Paymaster
+-[ ] print relay info
