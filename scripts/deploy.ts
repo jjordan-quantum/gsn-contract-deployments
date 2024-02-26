@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import {ZERO_ADDRESS} from "./constants";
+import {POLYGON_RELAY_HUB_CONFIG, ZERO_ADDRESS} from "./constants";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -43,8 +43,8 @@ async function main() {
   // ===========================================================================
 
   const penalizer = await ethers.deployContract("Penalizer", [
-    '100', // todo - find out a reasonable _penalizeBlockDelay
-    '100', // todo - find out a reasonable _penalizeBlockExpiration
+    '5', // _penalizeBlockDelay used in polygon
+    '5', // _penalizeBlockExpiration used in polygon
   ], {
     value: '0',
   });
@@ -62,9 +62,9 @@ async function main() {
   // ===========================================================================
 
   const stakeManager = await ethers.deployContract("StakeManager", [
-    '100', // todo - find out a reasonable _maxUnstakeDelay
-    '100', // todo - find out a reasonable _abandonmentDelay
-    '100', // todo - find out a reasonable _escheatmentDelay
+    '100000000', //  _maxUnstakeDelay
+    '1000', // _abandonmentDelay used in polygon
+    '500', // _escheatmentDelay used in polygon
     deployer.address,
     deployer.address,
   ], {
@@ -84,7 +84,7 @@ async function main() {
   // ===========================================================================
 
   const relayRegistrar = await ethers.deployContract("RelayRegistrar", [
-    '100', // todo - find out a reasonable _relayRegistrationMaxAge
+    '15552000', // _relayRegistrationMaxAge used in polygon
   ], {
     value: '0',
   });
@@ -107,15 +107,9 @@ async function main() {
     ZERO_ADDRESS,
     relayRegistrar.target,
     {
-      maxWorkerCount: 2,
-      gasReserve: 50000,
-      postOverhead: 25000,
-      gasOverhead: 15000,
-      minimumUnstakeDelay: 60000,
+      ...POLYGON_RELAY_HUB_CONFIG,
       devAddress: deployer.address,
-      devFee: 0,
-      baseRelayFee: '1000000000000000',
-      pctRelayFee: 2,
+      devFee: 0,  // polygon  = 10
     }
   ], {
     value: '0',
