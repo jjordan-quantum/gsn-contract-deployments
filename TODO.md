@@ -1,8 +1,8 @@
 ### TODO list for GSN deployment:
--[ ] deploy staking token
+-[x] deploy staking token
 -[x] deploy forwarder
--[ ] execute Forwarder.registerRequestType
--[ ] execute Forwarder.registerDomainSeparator
+-[x] execute Forwarder.registerRequestType
+-[x] execute Forwarder.registerDomainSeparator
 -[x] deploy Penalizer
 -[x] deploy StakeManager
 -[x] deploy RelayRegistrar

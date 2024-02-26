@@ -11,3 +11,55 @@ export const POLYGON_RELAY_HUB_CONFIG: any = {
   baseRelayFee: '0',
   pctRelayFee: 30,
 }
+
+export const GsnRequestType = {
+  typeName: 'RelayRequest',
+  typeSuffix: 'RelayData relayData)RelayData(uint256 maxFeePerGas,uint256 maxPriorityFeePerGas,uint256 transactionCalldataGasUsed,address relayWorker,address paymaster,address forwarder,bytes paymasterData,uint256 clientId)'
+}
+
+export const GsnDomainSeparatorType = {
+  prefix: 'string name,string version',
+  version: '3'
+}
+
+export const defaultGsnConfigPartial: any = {
+  domainSeparatorName: 'GSN Relayed Transaction'
+}
+
+// export const defaultGsnConfig: GSNConfig = {
+//   calldataEstimationSlackFactor: 1,
+//   preferredRelays: [],
+//   blacklistedRelays: [],
+//   pastEventsQueryMaxPageSize: Number.MAX_SAFE_INTEGER,
+//   pastEventsQueryMaxPageCount: 20,
+//   gasPriceFactorPercent: GAS_PRICE_PERCENT,
+//   gasPriceSlackPercent: GAS_PRICE_SLACK_PERCENT,
+//   getGasFeesBlocks: 5,
+//   getGasFeesPercentile: 50,
+//   gasPriceOracleUrl: '',
+//   gasPriceOraclePath: '',
+//   minMaxPriorityFeePerGas: 1e9,
+//   maxRelayNonceGap: MAX_RELAY_NONCE_GAP,
+//   relayTimeoutGrace: DEFAULT_RELAY_TIMEOUT_GRACE_SEC,
+//   methodSuffix: '_v4',
+//   requiredVersionRange: gsnRequiredVersion,
+//   jsonStringifyRequest: true,
+//   auditorsCount: 0,
+//   skipErc165Check: false,
+//   clientId: '1',
+//   requestValidSeconds: 172800, // 2 days
+//   maxViewableGasLimit: '20000000',
+//   minViewableGasLimit: '300000',
+//   environment: defaultEnvironment,
+//   maxApprovalDataLength: 0,
+//   maxPaymasterDataLength: 0,
+//   clientDefaultConfigUrl: `https://client-config.opengsn.org/${gsnRuntimeVersion}/client-config.json`,
+//   useClientDefaultConfigUrl: true,
+//   performDryRunViewRelayCall: true,
+//   performEstimateGasFromRealSender: false,
+//   paymasterAddress: '',
+//   tokenPaymasterDomainSeparators: {},
+//   waitForSuccessSliceSize: 3,
+//   waitForSuccessPingGrace: 3000,
+//   domainSeparatorName: 'GSN Relayed Transaction'
+// }

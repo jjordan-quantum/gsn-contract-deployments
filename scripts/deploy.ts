@@ -1,5 +1,11 @@
 import { ethers } from "hardhat";
-import {POLYGON_RELAY_HUB_CONFIG, ZERO_ADDRESS} from "./constants";
+import {
+  defaultGsnConfigPartial,
+  GsnDomainSeparatorType,
+  GsnRequestType,
+  POLYGON_RELAY_HUB_CONFIG,
+  ZERO_ADDRESS
+} from "./constants";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -26,11 +32,25 @@ async function main() {
 
   // ===========================================================================
   //
-  //  FORWARDER EXECUTIONS
+  //  FORWARDER - REGISTER REQUEST TYPE
   //
   // ===========================================================================
 
-  // TODO
+  console.log(`Registering request type for Forwarder...`);
+  await forwarder.registerRequestType(GsnRequestType.typeName, GsnRequestType.typeSuffix);
+
+  // ===========================================================================
+  //
+  //  FORWARDER - REGISTER DOMAIN SEPARATOR
+  //
+  // ===========================================================================
+
+  console.log(`Registering domain separator for Forwarder...`);
+
+  await forwarder.registerDomainSeparator(
+    defaultGsnConfigPartial.domainSeparatorName,
+    GsnDomainSeparatorType.version
+  );
 
   // ===========================================================================
   //
