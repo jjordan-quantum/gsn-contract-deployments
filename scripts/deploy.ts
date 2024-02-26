@@ -10,7 +10,9 @@ async function main() {
   //
   // ===========================================================================
 
-  // TODO
+  const stakingToken = await ethers.deployContract('TestToken', []);
+  await stakingToken.waitForDeployment();
+  console.log(`Test Token (for staking) deployed to ${stakingToken.target}`);
 
   // ===========================================================================
   //
@@ -18,15 +20,9 @@ async function main() {
   //
   // ===========================================================================
 
-  const forwarder = await ethers.deployContract("Forwarder", [], {
-    value: '0',
-  });
-
+  const forwarder = await ethers.deployContract("Forwarder", []);
   await forwarder.waitForDeployment();
-
-  console.log(
-    `Forwarder deployed to ${forwarder.target}`
-  );
+  console.log(`Forwarder deployed to ${forwarder.target}`);
 
   // ===========================================================================
   //
@@ -45,15 +41,10 @@ async function main() {
   const penalizer = await ethers.deployContract("Penalizer", [
     '5', // _penalizeBlockDelay used in polygon
     '5', // _penalizeBlockExpiration used in polygon
-  ], {
-    value: '0',
-  });
+  ]);
 
   await penalizer.waitForDeployment();
-
-  console.log(
-    `Penalizer deployed to ${penalizer.target}`
-  );
+  console.log(`Penalizer deployed to ${penalizer.target}`);
 
   // ===========================================================================
   //
@@ -67,15 +58,10 @@ async function main() {
     '500', // _escheatmentDelay used in polygon
     deployer.address,
     deployer.address,
-  ], {
-    value: '0',
-  });
+  ]);
 
   await stakeManager.waitForDeployment();
-
-  console.log(
-    `StakeManager deployed to ${stakeManager.target}`
-  );
+  console.log(`StakeManager deployed to ${stakeManager.target}`);
 
   // ===========================================================================
   //
@@ -85,15 +71,10 @@ async function main() {
 
   const relayRegistrar = await ethers.deployContract("RelayRegistrar", [
     '15552000', // _relayRegistrationMaxAge used in polygon
-  ], {
-    value: '0',
-  });
+  ]);
 
   await relayRegistrar.waitForDeployment();
-
-  console.log(
-    `RelayRegistrar deployed to ${relayRegistrar.target}`
-  );
+  console.log(`RelayRegistrar deployed to ${relayRegistrar.target}`);
 
   // ===========================================================================
   //
@@ -111,15 +92,10 @@ async function main() {
       devAddress: deployer.address,
       devFee: 0,  // polygon  = 10
     }
-  ], {
-    value: '0',
-  });
+  ]);
 
   await relayHub.waitForDeployment();
-
-  console.log(
-    `RelayHub deployed to ${relayHub.target}`
-  );
+  console.log(`RelayHub deployed to ${relayHub.target}`);
 
   // ===========================================================================
   //
@@ -127,15 +103,9 @@ async function main() {
   //
   // ===========================================================================
 
-  const payMaster = await ethers.deployContract("TestPaymasterEverythingAccepted", [], {
-    value: '0',
-  });
-
+  const payMaster = await ethers.deployContract("TestPaymasterEverythingAccepted", []);
   await payMaster.waitForDeployment();
-
-  console.log(
-    `PayMaster deployed to ${payMaster.target}`
-  );
+  console.log(`PayMaster deployed to ${payMaster.target}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
