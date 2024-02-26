@@ -94,6 +94,54 @@ async function main() {
   console.log(
     `RelayRegistrar deployed to ${relayRegistrar.target}`
   );
+
+  // ===========================================================================
+  //
+  //  DEPLOY RELAYHUB
+  //
+  // ===========================================================================
+
+  const relayHub = await ethers.deployContract("RelayHub", [
+    stakeManager.target,
+    penalizer.target,
+    ZERO_ADDRESS,
+    relayRegistrar.target,
+    {
+      maxWorkerCount: 2,
+      gasReserve: 50000,
+      postOverhead: 25000,
+      gasOverhead: 15000,
+      minimumUnstakeDelay: 60000,
+      devAddress: deployer.address,
+      devFee: 0,
+      baseRelayFee: '1000000000000000',
+      pctRelayFee: 2,
+    }
+  ], {
+    value: '0',
+  });
+
+  await relayHub.waitForDeployment();
+
+  console.log(
+    `RelayHub deployed to ${relayHub.target}`
+  );
+
+  // ===========================================================================
+  //
+  //  DEPLOY PAYMASTER
+  //
+  // ===========================================================================
+
+  const payMaster = await ethers.deployContract("TestPaymasterEverythingAccepted", [], {
+    value: '0',
+  });
+
+  await payMaster.waitForDeployment();
+
+  console.log(
+    `PayMaster deployed to ${payMaster.target}`
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere

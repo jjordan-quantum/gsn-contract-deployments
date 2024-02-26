@@ -6,13 +6,13 @@
 -[x] deploy Penalizer
 -[x] deploy StakeManager
 -[x] deploy RelayRegistrar
--[ ] deploy RelayHub
+-[x] deploy RelayHub
 -[ ] apply deployment configs
 -[ ] apply hub config
 -[ ] apply staking token config
 -[ ] set StakeManager devAddress
 -[ ] set RelayRegistrar fields
--[ ] deploy Paymaster
+-[x] deploy Paymaster
 -[ ] set Paymaster fields
 -[ ] deposit funds to Paymaster
 -[ ] print relay info
