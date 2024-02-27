@@ -119,6 +119,24 @@ async function main() {
 
   // ===========================================================================
   //
+  //  RELAYHUB - SET STAKING TOKEN CONFIG
+  //
+  // ===========================================================================
+
+  console.log(`Setting staking token config for RelayHub - min stake for Test Token is 100 TEST...`);
+  await relayHub.setMinimumStakes([stakingToken.target], ['100000000000000000000']);
+
+  // ===========================================================================
+  //
+  //  STAKEMANAGER - SETTING DEV ADDRESS
+  //
+  // ===========================================================================
+
+  console.log(`Setting devAddress for StakeManager to ${deployer.address}...`);
+  await stakeManager.setDevAddress(deployer.address);
+
+  // ===========================================================================
+  //
   //  DEPLOY PAYMASTER
   //
   // ===========================================================================
@@ -126,6 +144,36 @@ async function main() {
   const payMaster = await ethers.deployContract("TestPaymasterEverythingAccepted", []);
   await payMaster.waitForDeployment();
   console.log(`PayMaster deployed to ${payMaster.target}`);
+
+  // ===========================================================================
+  //
+  //  PAYMASTER - SETTING RELAYHUB
+  //
+  // ===========================================================================
+
+  console.log(`Setting relayHub for PayMaster to ${relayHub.target}...`);
+  await payMaster.setRelayHub(relayHub.target);
+
+  // ===========================================================================
+  //
+  //  PAYMASTER - SETTING TRUSTED FORWARDER
+  //
+  // ===========================================================================
+
+  console.log(`Setting _trustedForwarder for PayMaster to ${forwarder.target}...`);
+  await payMaster.setTrustedForwarder(forwarder.target);
+
+  // ===========================================================================
+  //
+  //  RELAYHUB - DEPOSITING FUNDS FOR PAYMASTER
+  //
+  // ===========================================================================
+
+  console.log(`Depositing funds for Paymaster in RelayHub...`);
+
+  await relayHub.depositFor(payMaster.target, {
+    value: ethers.parseEther("1.0"),
+  });
 }
 
 // We recommend this pattern to be able to use async/await everywhere

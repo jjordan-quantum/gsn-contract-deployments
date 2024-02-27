@@ -7,12 +7,16 @@
 -[x] deploy StakeManager
 -[x] deploy RelayRegistrar
 -[x] deploy RelayHub
--[ ] apply deployment configs
--[ ] apply hub config
--[ ] apply staking token config
--[ ] set StakeManager devAddress
--[ ] set RelayRegistrar fields
+-[x] apply deployment configs  --this step is redundant
+-[x] apply hub config  -- this operation is redundant
+-[x] apply staking token config
+-[x] set StakeManager devAddress
+-[x] set RelayRegistrar fields  -- this operation is redundant
 -[x] deploy Paymaster
--[ ] set Paymaster fields
--[ ] deposit funds to Paymaster
+-[x] set Paymaster fields
+-[x] deposit funds to Paymaster
 -[ ] print relay info
+-[ ] update readme
+-[ ] use env for args
+-[ ] deploy to external network
+-[ ] add tests
