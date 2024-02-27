@@ -3,6 +3,8 @@ import { ethers, artifacts} from "hardhat";
 import {Forwarder, TestForwarderTarget} from "../typechain-types";
 import {Artifact} from "hardhat/types";
 import {toHex} from "web3-utils";
+import {SENDER} from "../scripts/constants";
+import * as util from "util";
 const abiCoder = new ethers.AbiCoder();
 
 describe('BaseRelayRecipient', async () => {
@@ -80,16 +82,29 @@ describe('BaseRelayRecipient', async () => {
     });
   });
 
-  // it('should extract msgSender and msgData in transaction', async () => {
-  //   // trust "from" as forwarder (using real forwarder requires signing
-  //   const recipient = await TestForwarderTarget.new(from)
-  //   const encoded = recipient.contract.methods.emitMessage('hello').encodeABI() as string
-  //   const encodedWithSender = `${encoded}${sender.slice(2)}`
-  //   await web3.eth.sendTransaction({ from, to: recipient.address, data: encodedWithSender })
-  //   const events = await recipient.contract.getPastEvents(null, { fromBlock: 1 })
-  //   const params = events[0].returnValues
-  //   assert.equal(params.realSender, sender)
-  //   assert.equal(params.msgSender, from)
-  //   assert.equal(params.realMsgData, encoded)
-  // })
+  describe('should extract msgSender and msgData in transaction', async () => {
+    it('should extract msgSender and msgData in transaction', async () => {
+      // trust "from" as forwarder (using real forwarder requires signing
+      recipient = await ethers.deployContract("TestForwarderTarget", [deployer.address]);
+      const encoded = (await recipient.emitMessage.populateTransaction('hello')).data;
+      const encodedWithSender = `${encoded}${SENDER.slice(2)}`;
+      await deployer.sendTransaction({ from: deployer.address , to: recipient.target, data: encodedWithSender })
+      const events = await recipient.queryFilter(recipient.getEvent('TestForwarderMessage'), 1);
+      expect(events.length > 0).to.be.true;
+
+      for(const event of events) {
+        const [
+          message,
+          realMsgData,
+          realSender,
+          msgSender,
+          origin,
+        ] = event.args;
+
+        expect(realSender).to.eql(SENDER);
+        expect(msgSender).to.eql(deployer.address);
+        expect(realMsgData).to.eql(encoded);
+      }
+    });
+  });
 })
