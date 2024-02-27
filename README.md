@@ -46,5 +46,9 @@ npm run deploy:local
 
 Run tests:
 
-TODO
+note: tests adapted from [here](https://github.com/opengsn/gsn/tree/da4222b76e3ae1968608dc5c5d80074dcac7c4be/packages/dev/test)
+
+```shell
+npm run test
+```
 
