@@ -15,8 +15,9 @@
 -[x] deploy Paymaster
 -[x] set Paymaster fields
 -[x] deposit funds to Paymaster
--[ ] print relay info
--[ ] update readme
+-[x] print relay info
+-[x] update readme
 -[ ] use env for args
 -[ ] deploy to external network
--[ ] add tests
+-[ ] add tests for hre
+-[ ] add tests for deployed contracts
