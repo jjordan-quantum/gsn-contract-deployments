@@ -1,4 +1,6 @@
 import { ethers } from "hardhat";
+const hre = require("hardhat");
+
 import {
   defaultGsnConfigPartial,
   GsnDomainSeparatorType,
@@ -6,6 +8,9 @@ import {
   POLYGON_RELAY_HUB_CONFIG,
   ZERO_ADDRESS
 } from "./constants";
+
+import {printRelayInfo} from "./utils";
+const ONE_HUNDRED_ETHER = ethers.parseEther("100").toString();
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -124,7 +129,7 @@ async function main() {
   // ===========================================================================
 
   console.log(`Setting staking token config for RelayHub - min stake for Test Token is 100 TEST...`);
-  await relayHub.setMinimumStakes([stakingToken.target], ['100000000000000000000']);
+  await relayHub.setMinimumStakes([stakingToken.target], [ONE_HUNDRED_ETHER]);
 
   // ===========================================================================
   //
@@ -174,6 +179,21 @@ async function main() {
   await relayHub.depositFor(payMaster.target, {
     value: ethers.parseEther("1.0"),
   });
+
+  // ===========================================================================
+  //
+  //  PRINT RELAY INFO
+  //
+  // ===========================================================================
+
+  printRelayInfo(
+    String(relayHub.target),
+    deployer.address,
+    hre.network.config.url,
+    hre.hardhatArguments.network,
+    String(stakingToken.target),
+    ONE_HUNDRED_ETHER,
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere
