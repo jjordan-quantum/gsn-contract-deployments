@@ -32,7 +32,17 @@ npm run deploy
 
 Try deploying to target network:
 
-TODO
+ - first run the hardhat network in a separate terminal:
+
+```shell
+npx hardhat node
+```
+
+ - run the deploy script using hardhat's localhost network option
+
+```shell
+npm run deploy:local
+```
 
 Run tests:
 
