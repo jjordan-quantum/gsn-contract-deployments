@@ -16,6 +16,8 @@ Install deps:
 npm i
 ```
 
+note: only tested on windows using node v16.20.0 and npm 8.19.4
+
 Compile contracts:
 
 ```shell
