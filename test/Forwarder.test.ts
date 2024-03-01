@@ -152,168 +152,168 @@ describe('Forwarder', async () => {
     })
   })
 
-  // describe('#verify', () => {
-  //   const typeName = `ForwardRequest(${GENERIC_PARAMS})`
-  //   const typeHash = keccak256(typeName)
-  //   let domainInfo: any
-  //
-  //   let domainSeparator: string
-  //
-  //   before('register domain separator', async () => {
-  //     domainInfo = {
-  //       name: 'domainName',
-  //       version: 'domainVer',
-  //       chainId,
-  //       verifyingContract: fwd.target
-  //     }
-  //
-  //     const data = {
-  //       domain: domainInfo,
-  //       primaryType: 'ForwardRequestForwardRequest',
-  //       types: {
-  //         EIP712Domain: EIP712DomainType
-  //       }
-  //     }
-  //
-  //     domainSeparator = bufferToHex(TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4))
-  //     await fwd.registerDomainSeparator('domainName', 'domainVer')
-  //   })
-  //
-  //   describe('#verify failures', () => {
-  //     const req = {
-  //       to: addr(1),
-  //       data: '0x',
-  //       from: senderAddress,
-  //       value: '0',
-  //       nonce: '0',
-  //       gas: '123',
-  //       validUntilTime: '0'
-  //     }
-  //
-  //     it('should fail on unregistered domain separator', async () => {
-  //       const dummyDomainSeparator = bytes32(1)
-  //
-  //       await expect(
-  //         fwd.verify(req, dummyDomainSeparator, typeHash, '0x', '0x'.padEnd(65 * 2 + 2, '1b')),
-  //         'FWD: unregistered domain sep.'
-  //       ).to.be.reverted;
-  //     })
-  //
-  //     it('should fail on wrong nonce', async () => {
-  //       await expect(fwd.verify({
-  //         ...req,
-  //         nonce: 123
-  //       }, domainSeparator, typeHash, '0x', '0x'), 'FWD: nonce mismatch').to.be.reverted;
-  //     })
-  //     it('should fail on invalid signature', async () => {
-  //       await expect(
-  //         fwd.verify(req, domainSeparator, typeHash, '0x', '0x'),
-  //         'ECDSA: invalid signature length'
-  //       ).to.be.reverted;
-  //
-  //       await expect(
-  //         fwd.verify(req, domainSeparator, typeHash, '0x', '0x123456'),
-  //         'ECDSA: invalid signature length'
-  //       ).to.be.reverted;
-  //
-  //       await expect(
-  //         fwd.verify(req, domainSeparator, typeHash, '0x', '0x' + '1b'.repeat(65)),
-  //         'FWD: signature mismatch'
-  //       ).to.be.reverted;
-  //     })
-  //   })
-  //
-  //   describe('#verify success', () => {
-  //     const req = {
-  //       to: addr(1),
-  //       data: '0x',
-  //       value: '0',
-  //       from: senderAddress,
-  //       nonce: '0',
-  //       gas: '123',
-  //       validUntilTime: '0'
-  //     }
-  //
-  //     let data: TypedMessage<MessageTypes>
-  //
-  //     before(() => {
-  //       data = {
-  //         domain: domainInfo,
-  //         primaryType: 'ForwardRequest',
-  //         types: {
-  //           EIP712Domain: EIP712DomainType,
-  //           ForwardRequest: ForwardRequestType
-  //         },
-  //         message: req
-  //       }
-  //       // sanity: verify that we calculated the type locally just like eth-utils:
-  //       const calcType = TypedDataUtils.encodeType('ForwardRequest', data.types)
-  //       expect(calcType).eql(typeName)
-  //       const calcTypeHash = bufferToHex(TypedDataUtils.hashType('ForwardRequest', data.types))
-  //       expect(calcTypeHash).eql(typeHash)
-  //     })
-  //
-  //     it('should verify valid signature', async () => {
-  //       const sig = signTypedData({ privateKey: senderPrivateKey, data, version: SignTypedDataVersion.V4 })
-  //       const domainSeparator = TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4)
-  //
-  //       await fwd.verify(req, bufferToHex(domainSeparator), typeHash, '0x', sig)
-  //     })
-  //
-  //     it('should verify valid signature of extended type', async () => {
-  //       const ExtendedMessageType = [
-  //         ...ForwardRequestType,
-  //         { name: 'extra', type: 'ExtraData' } // <--extension param. uses a typed structure - though could be plain field
-  //       ]
-  //       const ExtraDataType = [
-  //         { name: 'extraAddr', type: 'address' }
-  //       ]
-  //
-  //       const extendedReq = {
-  //         to: addr(1),
-  //         data: '0x',
-  //         value: '0',
-  //         from: senderAddress,
-  //         nonce: 0,
-  //         gas: 123,
-  //         validUntilTime: 0,
-  //         extra: {
-  //           extraAddr: addr(5)
-  //         }
-  //       }
-  //
-  //       // we create extended data message
-  //       const types = {
-  //         EIP712Domain: EIP712DomainType,
-  //         ExtendedMessage: ExtendedMessageType,
-  //         ExtraData: ExtraDataType
-  //       }
-  //       const extendedData: TypedMessage<typeof types> = {
-  //         domain: data.domain,
-  //         primaryType: 'ExtendedMessage',
-  //         types,
-  //         message: extendedReq
-  //       }
-  //
-  //       const typeName = 'ExtendedMessage'
-  //       const typeSuffix = 'ExtraData extra)ExtraData(address extraAddr)'
-  //
-  //       const { logs } = await fwd.registerRequestType(typeName, typeSuffix)
-  //       const { typeHash } = (logs[0].args)
-  //       const sig = signTypedData({ privateKey: senderPrivateKey, data: extendedData, version: SignTypedDataVersion.V4 })
-  //
-  //       // same calculation of domainSeparator as with base (no-extension)
-  //       const domainSeparator = TypedDataUtils.hashStruct('EIP712Domain', extendedData.domain, extendedData.types, SignTypedDataVersion.V4)
-  //
-  //       // encode entire struct, to extract "suffixData" from it
-  //       const encoded = TypedDataUtils.encodeData(extendedData.primaryType, extendedData.message, extendedData.types, SignTypedDataVersion.V4)
-  //       // skip default params: typehash, and 6 params, so 32*7
-  //       const suffixData = bufferToHex(encoded.slice((1 + countParams) * 32))
-  //
-  //       await fwd.verify(extendedReq, bufferToHex(domainSeparator), typeHash, suffixData, sig)
-  //     })
-  //   })
-  // })
+  describe('#verify', () => {
+    const typeName = `ForwardRequest(${GENERIC_PARAMS})`
+    const typeHash = keccak256(typeName)
+    let domainInfo: any
+
+    let domainSeparator: string
+
+    before('register domain separator', async () => {
+      domainInfo = {
+        name: 'domainName',
+        version: 'domainVer',
+        chainId,
+        verifyingContract: fwd.target
+      }
+
+      const data = {
+        domain: domainInfo,
+        primaryType: 'ForwardRequestForwardRequest',
+        types: {
+          EIP712Domain: EIP712DomainType
+        }
+      }
+
+      domainSeparator = bufferToHex(TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4))
+      await fwd.registerDomainSeparator('domainName', 'domainVer')
+    })
+
+    describe('#verify failures', () => {
+      const req = {
+        to: addr(1),
+        data: '0x',
+        from: senderAddress,
+        value: '0',
+        nonce: '0',
+        gas: '123',
+        validUntilTime: '0'
+      }
+
+      it('should fail on unregistered domain separator', async () => {
+        const dummyDomainSeparator = bytes32(1)
+
+        await expect(
+          fwd.verify(req, dummyDomainSeparator, typeHash, '0x', '0x'.padEnd(65 * 2 + 2, '1b')),
+          'FWD: unregistered domain sep.'
+        ).to.be.reverted;
+      })
+
+      it('should fail on wrong nonce', async () => {
+        await expect(fwd.verify({
+          ...req,
+          nonce: 123
+        }, domainSeparator, typeHash, '0x', '0x'), 'FWD: nonce mismatch').to.be.reverted;
+      })
+      it('should fail on invalid signature', async () => {
+        await expect(
+          fwd.verify(req, domainSeparator, typeHash, '0x', '0x'),
+          'ECDSA: invalid signature length'
+        ).to.be.reverted;
+
+        await expect(
+          fwd.verify(req, domainSeparator, typeHash, '0x', '0x123456'),
+          'ECDSA: invalid signature length'
+        ).to.be.reverted;
+
+        await expect(
+          fwd.verify(req, domainSeparator, typeHash, '0x', '0x' + '1b'.repeat(65)),
+          'FWD: signature mismatch'
+        ).to.be.reverted;
+      })
+    })
+
+    describe('#verify success', () => {
+      const req = {
+        to: addr(1),
+        data: '0x',
+        value: '0',
+        from: senderAddress,
+        nonce: '0',
+        gas: '123',
+        validUntilTime: '0'
+      }
+
+      let data: TypedMessage<MessageTypes>
+
+      before(() => {
+        data = {
+          domain: domainInfo,
+          primaryType: 'ForwardRequest',
+          types: {
+            EIP712Domain: EIP712DomainType,
+            ForwardRequest: ForwardRequestType
+          },
+          message: req
+        }
+        // sanity: verify that we calculated the type locally just like eth-utils:
+        const calcType = TypedDataUtils.encodeType('ForwardRequest', data.types)
+        expect(calcType).eql(typeName)
+        const calcTypeHash = bufferToHex(TypedDataUtils.hashType('ForwardRequest', data.types))
+        expect(calcTypeHash).eql(typeHash)
+      })
+
+      it('should verify valid signature', async () => {
+        const sig = signTypedData({ privateKey: senderPrivateKey, data, version: SignTypedDataVersion.V4 })
+        const domainSeparator = TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4)
+
+        await fwd.verify(req, bufferToHex(domainSeparator), typeHash, '0x', sig)
+      })
+
+      it('should verify valid signature of extended type', async () => {
+        const ExtendedMessageType = [
+          ...ForwardRequestType,
+          { name: 'extra', type: 'ExtraData' } // <--extension param. uses a typed structure - though could be plain field
+        ]
+        const ExtraDataType = [
+          { name: 'extraAddr', type: 'address' }
+        ]
+
+        const extendedReq = {
+          to: addr(1),
+          data: '0x',
+          value: '0',
+          from: senderAddress,
+          nonce: 0,
+          gas: 123,
+          validUntilTime: 0,
+          extra: {
+            extraAddr: addr(5)
+          }
+        }
+
+        // we create extended data message
+        const types = {
+          EIP712Domain: EIP712DomainType,
+          ExtendedMessage: ExtendedMessageType,
+          ExtraData: ExtraDataType
+        }
+        const extendedData: TypedMessage<typeof types> = {
+          domain: data.domain,
+          primaryType: 'ExtendedMessage',
+          types,
+          message: extendedReq
+        }
+
+        const typeName = 'ExtendedMessage'
+        const typeSuffix = 'ExtraData extra)ExtraData(address extraAddr)';
+        await fwd.registerRequestType(typeName, typeSuffix);
+        const events = await fwd.queryFilter(fwd.getEvent('RequestTypeRegistered'), 1);
+        const [ typeHash, returnValues] = getLastEvent(events).args;
+        const sig = signTypedData({ privateKey: senderPrivateKey, data: extendedData, version: SignTypedDataVersion.V4 })
+
+        // same calculation of domainSeparator as with base (no-extension)
+        const domainSeparator = TypedDataUtils.hashStruct('EIP712Domain', extendedData.domain, extendedData.types, SignTypedDataVersion.V4)
+
+        // encode entire struct, to extract "suffixData" from it
+        const encoded = TypedDataUtils.encodeData(extendedData.primaryType, extendedData.message, extendedData.types, SignTypedDataVersion.V4)
+        // skip default params: typehash, and 6 params, so 32*7
+        const suffixData = bufferToHex(encoded.slice((1 + countParams) * 32))
+
+        await fwd.verify(extendedReq, bufferToHex(domainSeparator), typeHash, suffixData, sig)
+      })
+    })
+  })
 
   // describe('#execute', () => {
   //   let data: TypedMessage<MessageTypes>
