@@ -4,8 +4,18 @@ import { toChecksumAddress } from 'web3-utils'
 import {Forwarder, TestForwarder} from "../typechain-types";
 import {ethers} from "hardhat";
 import {expect} from "chai";
+const abiCoder = new ethers.AbiCoder();
+
+import {
+  SignTypedDataVersion,
+  TypedDataUtils,
+  type TypedMessage,
+  type MessageTypes,
+  signTypedData
+} from '@metamask/eth-sig-util'
 
 import { keccak256 } from 'web3-utils';
+import {getLastEvent} from "./helpers";
 
 function addr (n: number): string {
   return '0x' + n.toString().repeat(40)
@@ -68,16 +78,14 @@ describe('Forwarder', async () => {
 
     it('should have a registered default type with no extra params', async () => {
       const events = await fwd.queryFilter(fwd.getEvent('RequestTypeRegistered'), 1);
-      expect(events.length > 0).to.be.true;
-      const [ _, returnValues] = events[0].args;
+      const [ typeHash, returnValues] = getLastEvent(events).args;
       expect(returnValues).eql( `ForwardRequest(${GENERIC_PARAMS})`);
     })
 
     it('should accept extension field', async () => {
       const ret = await fwd.registerRequestType('test2', 'bool extra)');
       const events = await fwd.queryFilter(fwd.getEvent('RequestTypeRegistered'), 1);
-      expect(events.length > 1).to.be.true;
-      const [ typeHash, returnValues] = events[1].args;
+      const [ typeHash, returnValues] = getLastEvent(events).args;
       expect(returnValues).eql( `test2(${GENERIC_PARAMS},bool extra)`);
       expect(typeHash).eql(keccak256(returnValues));
     })
@@ -88,36 +96,38 @@ describe('Forwarder', async () => {
     })
   })
 
-  // describe('#registerDomainSeparator', () => {
-  //   it('registered domain should match local definition', async () => {
-  //     const data = {
-  //       domain: {
-  //         name: 'domainName',
-  //         version: 'domainVer',
-  //         chainId,
-  //         verifyingContract: fwd.target
-  //       },
-  //       primaryType: 'ForwardRequest',
-  //       types: {
-  //         EIP712Domain: EIP712DomainType
-  //       }
-  //     }
-  //
-  //     const localDomainSeparator = bufferToHex(TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4))
-  //     const typehash = TypedDataUtils.hashType('EIP712Domain', data.types)
-  //     const ret = await fwd.registerDomainSeparator('domainName', 'domainVer')
-  //
-  //     const { domainSeparator, domainValue } = (ret.logs[0].args);
-  //
-  //     expect(domainValue, web3.eth.abi.encodeParameters(['bytes32', 'bytes32', 'bytes32', 'uint256', 'address']).eql(
-  //       [typehash, keccak256('domainName'), keccak256('domainVer'), data.domain.chainId, fwd.target])
-  //     );
-  //
-  //     expect(domainSeparator).eql(localDomainSeparator);
-  //
-  //     expect(await fwd.domains(localDomainSeparator)).eql( true);
-  //   })
-  // })
+  describe('#registerDomainSeparator', () => {
+    it('registered domain should match local definition', async () => {
+      const data = {
+        domain: {
+          name: 'domainName',
+          version: 'domainVer',
+          chainId,
+          verifyingContract: fwd.target
+        },
+        primaryType: 'ForwardRequest',
+        types: {
+          EIP712Domain: EIP712DomainType
+        }
+      }
+
+      const localDomainSeparator = bufferToHex(TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4))
+      const typehash = TypedDataUtils.hashType('EIP712Domain', data.types);
+      await fwd.registerDomainSeparator('domainName', 'domainVer');
+      const events = await fwd.queryFilter(fwd.getEvent('DomainRegistered'), 1);
+      const [ domainSeparator, domainValue] = getLastEvent(events).args;
+
+      expect(domainValue).eql(
+        abiCoder.encode(
+          ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
+          [typehash, keccak256('domainName'), keccak256('domainVer'), data.domain.chainId, fwd.target]
+        )
+      );
+
+      expect(domainSeparator).eql(localDomainSeparator);
+      expect(await fwd.domains(localDomainSeparator)).eql( true);
+    })
+  })
 
   // describe('registered typehash', () => {
   //   const fullType = `test4(${GENERIC_PARAMS},bool extra)`

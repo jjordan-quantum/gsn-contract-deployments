@@ -27,6 +27,7 @@
     "hardhat": "^2.20.1"
   },
   "dependencies": {
+    "@metamask/eth-sig-util": "^7.0.1",
     "@openzeppelin/contracts": "^4.2.0",
     "web3-utils": "^4.2.0"
   }
