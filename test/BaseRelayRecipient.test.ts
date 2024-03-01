@@ -4,7 +4,6 @@ import {Forwarder, TestForwarderTarget} from "../typechain-types";
 import {Artifact} from "hardhat/types";
 import {toHex} from "web3-utils";
 import {SENDER} from "../scripts/constants";
-import * as util from "util";
 const abiCoder = new ethers.AbiCoder();
 
 describe('BaseRelayRecipient', async () => {

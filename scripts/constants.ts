@@ -1,3 +1,7 @@
+export type Address = string;
+export type IntString = string;
+export type PrefixedHexString = string
+
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const SENDER = '0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97';
 
@@ -22,6 +26,12 @@ export const GsnDomainSeparatorType = {
   prefix: 'string name,string version',
   version: '3'
 }
+
+type addresses = 'from' | 'to'
+type data = 'data'
+type intStrings = 'value' | 'nonce' | 'gas' | 'validUntilTime'
+
+export type ForwardRequest = Record<addresses, Address> & Record<data, PrefixedHexString> & Record<intStrings, IntString>
 
 export const defaultGsnConfigPartial: any = {
   domainSeparatorName: 'GSN Relayed Transaction'

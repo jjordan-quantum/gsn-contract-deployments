@@ -21,7 +21,9 @@
   },
   "homepage": "https://github.com/jjordan-quantum/gsn-contract-deployments#readme",
   "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/test-helpers": "^0.5.15",
     "hardhat": "^2.20.1"
   },
   "dependencies": {
