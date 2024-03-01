@@ -20,4 +20,16 @@
 -[x] deploy to external network
 -[ ] use env for args
 -[ ] add tests for hre
+  - [x] BaseRelayRecipient.test.ts
+  - [x] Forwarder.test.ts
+  - [ ] AbandonedRelayFlow.test.ts
+  - [ ] PaymasterCommitment.test.ts
+  - [ ] RelayHub.test.ts
+  - [ ] RelayHubConfiguration.test.ts
+  - [ ] RelayHubGasCalculations.test.ts
+  - [ ] RelayHubPenalizations.test.ts
+  - [ ] RelayHubValidator.test.ts
+  - [ ] SampleRecipient.test.ts
+  - [ ] StakeManager.test.ts
+  - [ ] Penalizer
 -[ ] add tests for deployed contracts

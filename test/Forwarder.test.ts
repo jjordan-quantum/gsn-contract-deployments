@@ -640,7 +640,7 @@ describe('Forwarder', async () => {
           success,
           error,
         ] = getLastEvent(events).args;
-        
+
         expect(error).eql('')
         expect(success).eql(true)
         expect((await ethers.provider.getBalance(senderAddress)).toString()).eql(extraFunds.toString())
