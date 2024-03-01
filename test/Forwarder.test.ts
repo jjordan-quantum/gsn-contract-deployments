@@ -315,279 +315,292 @@ describe('Forwarder', async () => {
     })
   })
 
-  // describe('#execute', () => {
-  //   let data: TypedMessage<MessageTypes>
-  //   let typeName: string
-  //   let typeHash: string
-  //   let recipient: TestForwarderTarget
-  //   let testfwd: TestForwarder
-  //   let domainSeparator: string
-  //
-  //   before(async () => {
-  //     typeName = `ForwardRequest(${GENERIC_PARAMS})`
-  //     typeHash = web3.utils.keccak256(typeName)
-  //     await fwd.registerRequestType('TestCall', '')
-  //
-  //     data = {
-  //       domain: {
-  //         name: 'Test Domain',
-  //         version: '1',
-  //         chainId,
-  //         verifyingContract: String(fwd.target),
-  //       },
-  //       primaryType: 'ForwardRequest',
-  //       types: {
-  //         EIP712Domain: EIP712DomainType,
-  //         ForwardRequest: ForwardRequestType
-  //       },
-  //       message: {}
-  //     }
-  //     // sanity: verify that we calculated the type locally just like eth-utils:
-  //     const calcType = TypedDataUtils.encodeType('ForwardRequest', data.types)
-  //     expect(calcType).eql(typeName)
-  //     const calcTypeHash = bufferToHex(TypedDataUtils.hashType('ForwardRequest', data.types))
-  //     expect(calcTypeHash).eql(typeHash)
-  //
-  //     recipient = await ethers.deployContract("TestForwarderTarget", [fwd.target]);
-  //     testfwd = await ethers.deployContract("TestForwarder", []);
-  //
-  //     const ret = await fwd.registerDomainSeparator(data.domain.name!, data.domain.version!)
-  //
-  //     domainSeparator = bufferToHex(TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4))
-  //
-  //     // validate registration matches local definition
-  //     expect(domainSeparator).eql((ret.logs[0].args).domainSeparator)
-  //   })
-  //
-  //   it('should call function', async () => {
-  //     const func = recipient.methods.emitMessage('hello').encodeABI()
-  //     // const func = recipient.contract.methods.testRevert().encodeABI()
-  //
-  //     const req1 = {
-  //       to: recipient.target,
-  //       data: func,
-  //       value: '0',
-  //       from: senderAddress,
-  //       nonce: 0,
-  //       gas: 1e6,
-  //       validUntilTime: 0
-  //     }
-  //     const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
-  //     const domainSeparator = TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4)
-  //
-  //     // note: we pass request as-is (with extra field): web3/truffle can only send javascript members that were
-  //     // declared in solidity
-  //     await fwd.execute(req1, bufferToHex(domainSeparator), typeHash, '0x', sig)
-  //     // @ts-ignore
-  //     const logs = await recipient.getPastEvents('TestForwarderMessage')
-  //     expect(logs.length).eql(1, 'TestRecipient should emit')
-  //     // @ts-ignore - weird
-  //     expect(logs[0].args.realSender).eql(senderAddress, 'TestRecipient should "see" real sender of meta-tx')
-  //     expect('1').eql((await fwd.getNonce(senderAddress)).toString(), 'execute should increment nonce')
-  //   })
-  //
-  //   it('should revert if not given enough gas', async () => {
-  //     const nonce = await fwd.getNonce(senderAddress)
-  //
-  //     const func = recipient.methods.emitMessage('hello').encodeABI()
-  //     const funcGasEtimate = await recipient.emitMessage.estimateGas('hello')
-  //
-  //     const req1 = {
-  //       to: recipient.target,
-  //       data: func,
-  //       value: '0',
-  //       from: senderAddress,
-  //       nonce: nonce.toString(),
-  //       gas: funcGasEtimate,
-  //       validUntilTime: 0
-  //     }
-  //     const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
-  //     const domainSeparator = TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4)
-  //
-  //     const outerGasEstimate = await testfwd.callExecute.estimateGas(fwd.target, req1, bufferToHex(domainSeparator), typeHash, '0x', sig)
-  //
-  //     // should fail if too little gas
-  //     await expect(
-  //       testfwd.callExecute(fwd.target, req1, bufferToHex(domainSeparator), typeHash, '0x', sig, { gasLimit: Number(outerGasEstimate) - 1000 }),
-  //       'insufficient gas'
-  //     ).to.be.reverted;
-  //
-  //     // and succeed with exact amount
-  //     await testfwd.callExecute(fwd.target, req1, bufferToHex(domainSeparator), typeHash, '0x', sig, { gasLimit: Number(outerGasEstimate) })
-  //   })
-  //
-  //   it('should return revert message of target revert', async () => {
-  //     const func = recipient.testRevert().encodeABI()
-  //
-  //     const req1 = {
-  //       to: recipient.target,
-  //       data: func,
-  //       value: '0',
-  //       from: senderAddress,
-  //       nonce: (await fwd.getNonce(senderAddress)).toString(),
-  //       gas: 1e6,
-  //       validUntilTime: 0
-  //     }
-  //
-  //     const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
-  //
-  //     // the helper simply emits the method return values
-  //     const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig)
-  //     expect(ret.logs[0].args.error).eql('always fail')
-  //   })
-  //
-  //   it('should not be able to re-submit after revert (its repeated nonce)', async () => {
-  //     const func = recipient.testRevert().encodeABI()
-  //
-  //     const req1: ForwardRequest = {
-  //       to: String(recipient.target),
-  //       data: func,
-  //       value: '0',
-  //       from: senderAddress,
-  //       nonce: (await fwd.getNonce(senderAddress)).toString(),
-  //       gas: 1e6.toString(),
-  //       validUntilTime: '0'
-  //     }
-  //     const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
-  //
-  //     // the helper simply emits the method return values
-  //     const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig)
-  //     expect(ret.logs[0].args.error).eql('always fail')
-  //     expect(ret.logs[0].args.success).eql(false)
-  //
-  //     await expect(
-  //       testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig),
-  //       'nonce mismatch'
-  //     ).to.be.reverted;
-  //   })
-  //
-  //   it('should revert if validUntil is passed', async () => {
-  //     const func = recipient.testRevert().encodeABI()
-  //
-  //     const req1: ForwardRequest = {
-  //       to: String(recipient.target),
-  //       data: func,
-  //       value: '0',
-  //       from: senderAddress,
-  //       nonce: (await fwd.getNonce(senderAddress)).toString(),
-  //       gas: '1000000',
-  //       validUntilTime: '1'
-  //     }
-  //     const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
-  //
-  //     await expect(
-  //       fwd.execute(req1, domainSeparator, typeHash, '0x', sig),
-  //       'FWD: request expired'
-  //     ).to.be.reverted;
-  //   })
-  //
-  //   describe('value transfer', () => {
-  //     let recipient: TestForwarderTarget
-  //
-  //     beforeEach(async () => {
-  //       recipient = await ethers.deployContract("TestForwarderTarget", [fwd.target]);
-  //     })
-  //     afterEach('should not leave funds in the forwarder', async () => {
-  //       expect(await web3.eth.getBalance(fwd.target)).eql('0')
-  //     })
-  //
-  //     it('should fail to forward request if value specified but not provided', async () => {
-  //       const value = ether('1')
-  //       const func = recipient.mustReceiveEth(value.toString()).encodeABI()
-  //
-  //       const req1: ForwardRequest = {
-  //         to: String(recipient.target),
-  //         data: func,
-  //         from: senderAddress,
-  //         nonce: (await fwd.getNonce(senderAddress)).toString(),
-  //         value: value.toString(),
-  //         gas: '1000000',
-  //         validUntilTime: '0'
-  //       }
-  //       const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
-  //
-  //       const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig)
-  //       expect(ret.logs[0].args.success).eql(false)
-  //     })
-  //
-  //     it('should fail to forward request if value specified but not enough not provided', async () => {
-  //       const value = ether('1')
-  //       const func = recipient.mustReceiveEth(value.toString()).encodeABI()
-  //
-  //       const req1 = {
-  //         to: recipient.target,
-  //         data: func,
-  //         from: senderAddress,
-  //         nonce: (await fwd.getNonce(senderAddress)).toString(),
-  //         value: ether('2').toString(),
-  //         gas: 1e6,
-  //         validUntilTime: 0
-  //       }
-  //       const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
-  //
-  //       const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig, { value })
-  //       expect(ret.logs[0].args.success).eql(false)
-  //     })
-  //
-  //     it('should forward request with value', async () => {
-  //       const value = ether('1')
-  //       const func = recipient.mustReceiveEth(value.toString()).encodeABI()
-  //
-  //       // value = ether('0');
-  //       const req1: ForwardRequest = {
-  //         to: String(recipient.target),
-  //         data: func,
-  //         from: senderAddress,
-  //         nonce: (await fwd.getNonce(senderAddress)).toString(),
-  //         value: value.toString(),
-  //         gas: '1000000',
-  //         validUntilTime: '0'
-  //       }
-  //       const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
-  //
-  //       const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig, { value })
-  //       expect(ret.logs[0].args.error).eql('')
-  //       expect(ret.logs[0].args.success).eql(true)
-  //
-  //       expect(await web3.eth.getBalance(recipient.target)).eql(value.toString())
-  //     })
-  //
-  //     it('should forward all funds left in forwarder to "from" address', async () => {
-  //       const senderPrivateKey = ethWallet.generate().getPrivateKey()
-  //       const senderAddress = toChecksumAddress(bufferToHex(privateToAddress(senderPrivateKey)))
-  //
-  //       const value = ether('1')
-  //       const func = recipient.mustReceiveEth(value.toString()).encodeABI()
-  //       const funcEst = await recipient.mustReceiveEth.estimateGas(value.toString(), { value })
-  //
-  //       const req1: ForwardRequest = {
-  //         to: String(recipient.target),
-  //         data: func,
-  //         from: senderAddress,
-  //         nonce: (await fwd.getNonce(senderAddress)).toString(),
-  //         value: value.toString(),
-  //         gas: funcEst.toString(),
-  //         validUntilTime: '0'
-  //       }
-  //       const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
-  //
-  //       // first gas estimation, with only value for the TX
-  //       await web3.eth.sendTransaction({ from: deployer.address, to: fwd.target, value })
-  //       const estim = await testfwd.callExecute.estimateGas(fwd.target, req1, domainSeparator, typeHash, '0x', sig).catch(e => e.message)
-  //       const extraFunds = ether('4')
-  //       await web3.eth.sendTransaction({ from: deployer.address, to: fwd.target, value: extraFunds })
-  //
-  //       // 2nd estim after sending more eth into the forwarder (which will require transfer after calling the target function.
-  //       const estim2 = await testfwd.callExecute.estimateGas(fwd.target, req1, domainSeparator, typeHash, '0x', sig).catch(e => e.message)
-  //       console.log('estim without sendback: ', estim, 'estim with sendback=', estim2, 'diff=', estim2 - estim)
-  //
-  //       // deliberately use the estimation that didn't assume we're going to transfer. it should have enough slack
-  //       const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig, { gasLimit: estim })
-  //       expect(ret.logs[0].args.error).eql('')
-  //       expect(ret.logs[0].args.success).eql(true)
-  //
-  //       expect(await web3.eth.getBalance(senderAddress)).eql(extraFunds.toString())
-  //     })
-  //   })
-  // })
+  describe('#execute', () => {
+    let data: TypedMessage<MessageTypes>
+    let typeName: string
+    let typeHash: string
+    let recipient: any;
+    let testfwd: TestForwarder
+    let domainSeparator: string
+
+    before(async () => {
+      typeName = `ForwardRequest(${GENERIC_PARAMS})`
+      typeHash = keccak256(typeName)
+      await fwd.registerRequestType('TestCall', '')
+
+      data = {
+        domain: {
+          name: 'Test Domain',
+          version: '1',
+          chainId,
+          verifyingContract: String(fwd.target),
+        },
+        primaryType: 'ForwardRequest',
+        types: {
+          EIP712Domain: EIP712DomainType,
+          ForwardRequest: ForwardRequestType
+        },
+        message: {}
+      }
+      // sanity: verify that we calculated the type locally just like eth-utils:
+      const calcType = TypedDataUtils.encodeType('ForwardRequest', data.types)
+      expect(calcType).eql(typeName)
+      const calcTypeHash = bufferToHex(TypedDataUtils.hashType('ForwardRequest', data.types))
+      expect(calcTypeHash).eql(typeHash)
+
+      recipient = await ethers.deployContract("TestForwarderTarget", [fwd.target]);
+      testfwd = await ethers.deployContract("TestForwarder", []);
+
+      const ret = await fwd.registerDomainSeparator(data.domain.name!, data.domain.version!)
+
+      domainSeparator = bufferToHex(TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4))
+
+      // validate registration matches local definition
+      const events = await fwd.queryFilter(fwd.getEvent('DomainRegistered'), 1);
+      const [ _domainSeparator, domainValue] = getLastEvent(events).args;
+
+      expect(domainSeparator).eql(_domainSeparator);
+    })
+
+    it('should call function', async () => {
+      //const func = recipient.methods.emitMessage('hello').encodeABI()
+      const func = (await recipient.emitMessage.populateTransaction('hello')).data;
+      // const func = recipient.contract.methods.testRevert().encodeABI()
+
+      const req1 = {
+        to: recipient.target,
+        data: func,
+        value: '0',
+        from: senderAddress,
+        nonce: 0,
+        gas: 1e6,
+        validUntilTime: 0
+      }
+      const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
+      const domainSeparator = TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4)
+
+      // note: we pass request as-is (with extra field): web3/truffle can only send javascript members that were
+      // declared in solidity
+      await fwd.execute(req1, bufferToHex(domainSeparator), typeHash, '0x', sig);
+
+      const events = await recipient.queryFilter(recipient.getEvent('TestForwarderMessage'), 1);
+
+      const [
+        message,
+        realMsgData,
+        realSender,
+        msgSender,
+        origin,
+      ] = getLastEvent(events).args;
+
+      expect(realSender).eql(senderAddress, 'TestRecipient should "see" real sender of meta-tx')
+      expect('1').eql((await fwd.getNonce(senderAddress)).toString(), 'execute should increment nonce')
+    })
+
+    it('should revert if not given enough gas', async () => {
+      const nonce = await fwd.getNonce(senderAddress)
+
+      const func = (await recipient.emitMessage.populateTransaction('hello')).data;
+      //const func = recipient.methods.emitMessage('hello').encodeABI()
+      const funcGasEtimate = await recipient.emitMessage.estimateGas('hello')
+
+      const req1 = {
+        to: recipient.target,
+        data: func,
+        value: '0',
+        from: senderAddress,
+        nonce: nonce.toString(),
+        gas: funcGasEtimate,
+        validUntilTime: 0
+      }
+      const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
+      const domainSeparator = TypedDataUtils.hashStruct('EIP712Domain', data.domain, data.types, SignTypedDataVersion.V4)
+
+      const outerGasEstimate = await testfwd.callExecute.estimateGas(fwd.target, req1, bufferToHex(domainSeparator), typeHash, '0x', sig)
+
+      // should fail if too little gas
+      await expect(
+        testfwd.callExecute(fwd.target, req1, bufferToHex(domainSeparator), typeHash, '0x', sig, { gasLimit: Number(outerGasEstimate) - 1000 }),
+      ).to.be.reverted;
+
+      // and succeed with exact amount
+      await expect(
+        testfwd.callExecute(fwd.target, req1, bufferToHex(domainSeparator), typeHash, '0x', sig, { gasLimit: Number(outerGasEstimate) })
+      ).to.not.be.reverted;
+    })
+
+    // it('should return revert message of target revert', async () => {
+    //   const func = recipient.testRevert().encodeABI()
+    //
+    //   const req1 = {
+    //     to: recipient.target,
+    //     data: func,
+    //     value: '0',
+    //     from: senderAddress,
+    //     nonce: (await fwd.getNonce(senderAddress)).toString(),
+    //     gas: 1e6,
+    //     validUntilTime: 0
+    //   }
+    //
+    //   const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
+    //
+    //   // the helper simply emits the method return values
+    //   const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig)
+    //   expect(ret.logs[0].args.error).eql('always fail')
+    // })
+    //
+    // it('should not be able to re-submit after revert (its repeated nonce)', async () => {
+    //   const func = recipient.testRevert().encodeABI()
+    //
+    //   const req1: ForwardRequest = {
+    //     to: String(recipient.target),
+    //     data: func,
+    //     value: '0',
+    //     from: senderAddress,
+    //     nonce: (await fwd.getNonce(senderAddress)).toString(),
+    //     gas: 1e6.toString(),
+    //     validUntilTime: '0'
+    //   }
+    //   const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
+    //
+    //   // the helper simply emits the method return values
+    //   const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig)
+    //   expect(ret.logs[0].args.error).eql('always fail')
+    //   expect(ret.logs[0].args.success).eql(false)
+    //
+    //   await expect(
+    //     testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig),
+    //     'nonce mismatch'
+    //   ).to.be.reverted;
+    // })
+    //
+    // it('should revert if validUntil is passed', async () => {
+    //   const func = recipient.testRevert().encodeABI()
+    //
+    //   const req1: ForwardRequest = {
+    //     to: String(recipient.target),
+    //     data: func,
+    //     value: '0',
+    //     from: senderAddress,
+    //     nonce: (await fwd.getNonce(senderAddress)).toString(),
+    //     gas: '1000000',
+    //     validUntilTime: '1'
+    //   }
+    //   const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
+    //
+    //   await expect(
+    //     fwd.execute(req1, domainSeparator, typeHash, '0x', sig),
+    //     'FWD: request expired'
+    //   ).to.be.reverted;
+    // })
+    //
+    // describe('value transfer', () => {
+    //   let recipient: TestForwarderTarget
+    //
+    //   beforeEach(async () => {
+    //     recipient = await ethers.deployContract("TestForwarderTarget", [fwd.target]);
+    //   })
+    //   afterEach('should not leave funds in the forwarder', async () => {
+    //     expect(await web3.eth.getBalance(fwd.target)).eql('0')
+    //   })
+    //
+    //   it('should fail to forward request if value specified but not provided', async () => {
+    //     const value = ether('1')
+    //     const func = recipient.mustReceiveEth(value.toString()).encodeABI()
+    //
+    //     const req1: ForwardRequest = {
+    //       to: String(recipient.target),
+    //       data: func,
+    //       from: senderAddress,
+    //       nonce: (await fwd.getNonce(senderAddress)).toString(),
+    //       value: value.toString(),
+    //       gas: '1000000',
+    //       validUntilTime: '0'
+    //     }
+    //     const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
+    //
+    //     const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig)
+    //     expect(ret.logs[0].args.success).eql(false)
+    //   })
+    //
+    //   it('should fail to forward request if value specified but not enough not provided', async () => {
+    //     const value = ether('1')
+    //     const func = recipient.mustReceiveEth(value.toString()).encodeABI()
+    //
+    //     const req1 = {
+    //       to: recipient.target,
+    //       data: func,
+    //       from: senderAddress,
+    //       nonce: (await fwd.getNonce(senderAddress)).toString(),
+    //       value: ether('2').toString(),
+    //       gas: 1e6,
+    //       validUntilTime: 0
+    //     }
+    //     const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
+    //
+    //     const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig, { value })
+    //     expect(ret.logs[0].args.success).eql(false)
+    //   })
+    //
+    //   it('should forward request with value', async () => {
+    //     const value = ether('1')
+    //     const func = recipient.mustReceiveEth(value.toString()).encodeABI()
+    //
+    //     // value = ether('0');
+    //     const req1: ForwardRequest = {
+    //       to: String(recipient.target),
+    //       data: func,
+    //       from: senderAddress,
+    //       nonce: (await fwd.getNonce(senderAddress)).toString(),
+    //       value: value.toString(),
+    //       gas: '1000000',
+    //       validUntilTime: '0'
+    //     }
+    //     const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
+    //
+    //     const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig, { value })
+    //     expect(ret.logs[0].args.error).eql('')
+    //     expect(ret.logs[0].args.success).eql(true)
+    //
+    //     expect(await web3.eth.getBalance(recipient.target)).eql(value.toString())
+    //   })
+    //
+    //   it('should forward all funds left in forwarder to "from" address', async () => {
+    //     const senderPrivateKey = ethWallet.generate().getPrivateKey()
+    //     const senderAddress = toChecksumAddress(bufferToHex(privateToAddress(senderPrivateKey)))
+    //
+    //     const value = ether('1')
+    //     const func = recipient.mustReceiveEth(value.toString()).encodeABI()
+    //     const funcEst = await recipient.mustReceiveEth.estimateGas(value.toString(), { value })
+    //
+    //     const req1: ForwardRequest = {
+    //       to: String(recipient.target),
+    //       data: func,
+    //       from: senderAddress,
+    //       nonce: (await fwd.getNonce(senderAddress)).toString(),
+    //       value: value.toString(),
+    //       gas: funcEst.toString(),
+    //       validUntilTime: '0'
+    //     }
+    //     const sig = signTypedData({ privateKey: senderPrivateKey, data: { ...data, message: req1 }, version: SignTypedDataVersion.V4 })
+    //
+    //     // first gas estimation, with only value for the TX
+    //     await web3.eth.sendTransaction({ from: deployer.address, to: fwd.target, value })
+    //     const estim = await testfwd.callExecute.estimateGas(fwd.target, req1, domainSeparator, typeHash, '0x', sig).catch(e => e.message)
+    //     const extraFunds = ether('4')
+    //     await web3.eth.sendTransaction({ from: deployer.address, to: fwd.target, value: extraFunds })
+    //
+    //     // 2nd estim after sending more eth into the forwarder (which will require transfer after calling the target function.
+    //     const estim2 = await testfwd.callExecute.estimateGas(fwd.target, req1, domainSeparator, typeHash, '0x', sig).catch(e => e.message)
+    //     console.log('estim without sendback: ', estim, 'estim with sendback=', estim2, 'diff=', estim2 - estim)
+    //
+    //     // deliberately use the estimation that didn't assume we're going to transfer. it should have enough slack
+    //     const ret = await testfwd.callExecute(fwd.target, req1, domainSeparator, typeHash, '0x', sig, { gasLimit: estim })
+    //     expect(ret.logs[0].args.error).eql('')
+    //     expect(ret.logs[0].args.success).eql(true)
+    //
+    //     expect(await web3.eth.getBalance(senderAddress)).eql(extraFunds.toString())
+    //   })
+    // })
+  })
 });
