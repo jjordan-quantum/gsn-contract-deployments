@@ -129,20 +129,28 @@ describe('Forwarder', async () => {
     })
   })
 
-  // describe('registered typehash', () => {
-  //   const fullType = `test4(${GENERIC_PARAMS},bool extra)`
-  //   const hash = keccak256(fullType)
-  //   it('should return false before registration', async () => {
-  //     expect(await fwd.typeHashes(hash)).eql( false)
-  //   })
-  //   it('should return true after registration', async () => {
-  //     const res = await fwd.registerRequestType('test4', 'bool extra)')
-  //     const args = res.logs[0].args
-  //     expect(args.typeStr).eql(fullType)
-  //     expect(args.typeHash).eql(hash)
-  //     expect(true).eql(await fwd.typeHashes(hash))
-  //   })
-  // })
+  describe('registered typehash', () => {
+    let fullType: string;
+    let hash: string;
+
+    before(async () => {
+      fullType = `test4(${GENERIC_PARAMS},bool extra)`
+      hash = keccak256(fullType)
+    })
+
+    it('should return false before registration', async () => {
+      expect(await fwd.typeHashes(hash)).eql( false)
+    })
+
+    it('should return true after registration', async () => {
+      await fwd.registerRequestType('test4', 'bool extra)')
+      const events = await fwd.queryFilter(fwd.getEvent('RequestTypeRegistered'), 1);
+      const [ typeHash, returnValues] = getLastEvent(events).args;
+      expect(returnValues).eql(fullType)
+      expect(typeHash).eql(hash)
+      expect(true).eql(await fwd.typeHashes(hash))
+    })
+  })
 
   // describe('#verify', () => {
   //   const typeName = `ForwardRequest(${GENERIC_PARAMS})`
